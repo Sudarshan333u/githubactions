@@ -1,6 +1,12 @@
 from flask import Flask
+import os
+
 app = Flask(__name__)
 
-@app.route('/')
+@app.route("/")
 def hello():
-    return 'Hello from Cloud Run and GitHub Actions!'
+    return "Hello from Cloud Run + GitHub Actions + Artifact Registry!"
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
