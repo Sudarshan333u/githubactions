@@ -1,7 +1,7 @@
-name: CI/CD to Cloud Run (Artifact Registry)
+name: CI/CD to Cloud Run (Artifact Registry - Manual)
 
 on:
-  workflow_dispatch:  # <-- manual trigger via GitHub UI
+  workflow_dispatch:  # Trigger manually from GitHub UI
 
 jobs:
   build-deploy:
@@ -11,18 +11,25 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up Google Cloud SDK
+    # ✅ Authenticate to Google Cloud using service account JSON key
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    # ✅ Install gcloud CLI and configure project
+    - name: Set up Google Cloud CLI
       uses: google-github-actions/setup-gcloud@v1
       with:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
-        export_default_credentials: true
 
+    # 🛠️ Build Docker image and push to Artifact Registry
     - name: Build and Push to Artifact Registry
       run: |
         gcloud builds submit \
           --tag us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/my-docker-repo/my-app
 
+    # 🚀 Deploy image to Cloud Run
     - name: Deploy to Cloud Run
       run: |
         gcloud run deploy my-app \
